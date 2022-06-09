@@ -1,0 +1,101 @@
+START
+DEFINE name AS string
+DEFINE is_it AS string
+DEFINE img AS cv::Mat
+DEFINE filtered_img AS cv::Mat
+DEFINE edge_dtct_img_1 AS cv::Mat
+DEFINE edge_dtct_img_2 AS cv::Mat
+DEFINE edge_dtct_img_3 AS cv::Mat
+DEFINE kernel_size_x AS integer
+DEFINE kernel_size_y AS integer
+
+DO																		
+|	CLEAR SCREEN
+|	PRINT Give existing picture name:
+|	READ name
+|	img <- cv::imread(name,1)
+WHILE(img IS EMPTY)
+
+DO
+|	DEFINE s_kernel_size AS string
+|	CLEAR SCREEN
+|	PRINT Choose Gauss filter kernel size x (width).
+|	PRINT Available sizes: 3, 5 ,7, 9
+|	READ s_kernel_size
+|	is_it <- true
+|	FOR(FROM 1 TO LENGTH(s_kernel_size)1)
+|	|	IF(s_kernel_size[i] NOT EQUAL digit)
+|	|	|	Set variable 'is_it' = "false"
+|	|	|	Stop 3.6 For Loop						
+|	If('is_it' == "true") {
+|	|	Convert 's_kernel_size' variable's content to integer type variable and save result to 'kernel_size_x'
+|	|	If('kernel_size_x' < 3 OR 'kernel_size_x' > 9 OR kernel_size_x is even number)
+|	|	|	Set variable 'is_it' = "false"
+|While('is it' == "false")
+Do
+|	Declare string ('s_kernel_size')
+|	CLEAR SCREEN
+|	Display request for user to input size of kernel (3,5,7 or 9)
+|	Wait for user's input of variable (to 's_kernel_size')
+|	Set variable 'is_it' = "true"
+|	For(i=1,2,...'s_kernel_size' length)
+|	|	If('s_kernel_size'[i] != digit)
+|	|	|	Set variable 'is_it' = "false"
+|	|	|	Stop 4.6 For Loop						
+|	If('is_it' == "true") {
+|	|	Convert 's_kernel_size' variable's content to integer type variable and save result to 'kernel_size_y'
+|	|	If('kernel_size_y' < 3 OR 'kernel_size_y' > 9 OR kernel_size_y is even number)
+|	|	|	Set variable 'is_it' = "false"
+|While('is it' == "false")
+Perform Gaussian blur on image in'img' by using 'kernel_size_x' by 'kernel_size_y" kernel and save result to 'filtered_img' (openCV function: GaussianBlur())
+Do
+|	CLEAR SCREEN
+|	Display request for user to input word ("sobel", "laplace" or "canny") as a choice of next operation 
+|	Wait for user's input of variable (to 'is_it')
+|While('is_it'!="sobel" AND 'is_it'!="laplace" AND 'is_it'!="canny")
+CLEAR SCREEN
+If('is_it' == "sobel")
+|	Display information, that Sobel edge detection method is chosen
+|	Declare image-holding-matrix ('grad_x', 'grad_y', 'gray_img') (openCV variable: Mat)
+|	Convert image in 'img' to grayscale and save result to 'gray_img' (openCV funtion: cvtColor())
+|	Apply Sobel Edge Detection in x direction to image in 'gray_img', use 'kernel_size_x' by 'kernel_size_x' kernel, save result to 'grad_x' (openCV funtion: Sobel())
+|	Apply Sobel Edge Detection in y direction to image in 'gray_img', use 'kernel_size_y' by 'kernel_size_y' kernel, save result to 'grad_y' (openCV funtion: Sobel())
+|	Scale, calculate to absolute values and convert to 8bit variable 'grad_x' (openCV funtion: convertScaleAbs())
+|	Scale, calculate to absolute values and convert to 8bit variable 'grad_y' (openCV funtion: convertScaleAbs())
+|	Sum images from 'grad_x' and 'grad_y' with same weights, save result in 'edge_dtct_img_1' (openCV funtion: addWeighted())
+If('is_it' == "laplace")
+|	Display information, that Laplace edge detection method is chosen
+|	Declare image-holding-matrix ('gray_img') (openCV variable: Mat)
+|	Convert image in 'img' to grayscale and save result to 'gray_img' (openCV funtion: cvtColor())
+|	Apply Laplacian Edge Detection to image in 'gray_img', use 'kernel_size_x' by 'kernel_size_x' kernel, save result to 'edge_dtct_img_1' (openCV funtion: Laplacian())
+|	Scale, calculate to absolute values and convert to 8bit variable 'edge_dtct_img_1' (openCV funtion: convertScaleAbs())
+If('is_it' == "laplace")
+|	Display information, that Canny edge detection method is chosen
+|	Declare image-holding-matrix ('gray_img') (openCV variable: Mat)
+|	Convert image in 'img' to grayscale and save result to 'gray_img' (openCV funtion: cvtColor())
+|	Apply Canny Edge Detection to image in 'gray_img', use 20 and 100 treshholds, save result to 'edge_dtct_img_1' (openCV funtion: Canny())
+|	Apply Canny Edge Detection to image in 'gray_img', use 50 and 120 treshholds, save result to 'edge_dtct_img_2' (openCV funtion: Canny())	
+|	Apply Canny Edge Detection to image in 'gray_img', use 70 and 150 treshholds, save result to 'edge_dtct_img_3' (openCV funtion: Canny())		
+Create Window with title "ORIGINAL IMAGE" (openCV function: namedWindow())
+Create Window with title "GAUSS FILTER APPLIED" (openCV function: namedWindow())
+If('is_it' == "sobel")
+|	Create Window named "SOBEL EDGE DETECTION APPLIED" (openCV function: namedWindow())
+|Else If('is_it' == "laplace")
+|	Create Window named "LAPLACIAN EDGE DETECTION APPLIED" (openCV function; namedWindow())
+|Else If('is_it' == "canny")
+|	Create Window named "EDGE DETECTION WITH  20 TO 100 TRESHOLD" (openCV function: namedWindow())
+|	Create Window named "EDGE DETECTION WITH  50 TO 120 TRESHOLD" (openCV function: namedWindow())
+|	Create Window named "EDGE DETECTION WITH  70 TO 150 TRESHOLD" (openCV function: namedWindow())
+Display 'img' image in window named "ORIGINAL IMAGE" (openCV funtion: imshow())
+Display 'filtered_img' image in window named "GAUSS FILTER APPLIED" (openCV funtion: imshow())	
+if('is_it' == "sobel")
+|	Display 'edge_dtct_img_1' image in window named "SOBEL EDGE DETECTION APPLIED" (openCV function: imshow())
+|Else If('is_it' == "laplace")
+|	Display 'edge_dtct_img_1' image in window named "LAPLACIAN EDGE DETECTION APPLIED" (openCV function: imshow())
+|Else If('is_it' == "canny")
+|	Display 'edge_dtct_img_1' image in window named "EDGE DETECTION WITH  20 TO 100 TRESHOLD" (openCV function: imshow())
+|	Display 'edge_dtct_img_2' image in window named "EDGE DETECTION WITH  50 TO 120 TRESHOLD" (openCV function: imshow())
+|	Display 'edge_dtct_img_3' image in window named "EDGE DETECTION WITH  70 TO 150 TRESHOLD" (openCV function: imshow())	
+Wait for user pressing any key
+Delete all winodows (openCV function: destroyAllWindows())
+END

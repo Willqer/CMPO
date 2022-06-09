@@ -1,0 +1,180 @@
+#include <opencv2/opencv.hpp>
+#include <iostream>
+#include <string>																	//gives us std::stoi function for converting string to int
+
+int main() {
+	//PROJECT 1 TASK 2
+
+
+
+	//=======================================================================================================
+	//VARIABLES==============================================================================================
+	//=======================================================================================================
+	std::string name;																//stores name of image to open					
+	cv::Mat img, filtered_img, edge_dtct_img_1, edge_dtct_img_2, edge_dtct_img_3;	//original opened img, img after filtration, img after chosen edge detection
+	int kernel_size_x, kernel_size_y;												//gauss filter (cv::gaussianblur()) kernel sizes, also used for Laplacian and Sobel edge detection
+	std::string is_it;																//string used as true/false AND(not boolean) later as storage for command concerning type of chosen edge detection type
+
+
+	//=======================================================================================================
+	//OPENING IMAGE==========================================================================================
+	//=======================================================================================================
+	//Do While loop keeps asking question until existing image name is given
+	do{																		
+		std::system("CLS");															//clears console feed (for tidiness reason)
+		std::cout << "Give existing picture name: ";								//asks question
+		std::cin >> name;															//receives name
+		img = cv::imread(name,1);													//tries to read image (as color image, hence '1')
+	} while (img.empty());															//repeats if image wasn't opened properly
+
+
+
+	//=======================================================================================================
+	//GAUSSIAN BLUR==========================================================================================
+	//=======================================================================================================
+	//Do While loop keeps asking question until proper (integer, positive, odd number) kernel x size is given
+	do{
+		std::string s_kernel_size;													//kernel size as string
+		system("CLS");																//clears console (tidyness)
+		std::cout << "Chooese Gauss filter kernel size x (width)." << std::endl << "Available sizes: 3, 5 ,7, 9" << std::endl;
+		std::cin >> s_kernel_size;													//input as string
+		is_it = "true";																//parameter set as true as by default input should be integer that meets the conditions. It is then verified
+
+		//For loop verifies if every char in string is a digit
+		for (int i = 0; i < s_kernel_size.length(); i++) {
+			//if For loop meets non digit character in string, then it sets is_it as false (string dosen't fit as integer) and stops
+			if (isdigit(s_kernel_size[i]) == false) {
+				is_it = "false";						
+				break;
+			}
+		}
+		//if so far string is established as integer, then string is converted into integer and integer is checked for conditions (odd number from range)
+		if (is_it == "true") {
+			kernel_size_x = std::stoi(s_kernel_size);								//converts string to integer
+
+			//if integer dosen't meet conditions, then it sets is_it as false (integer dosen't meet condition)
+			if (kernel_size_x < 3 || kernel_size_x > 9 || (kernel_size_x % 2 == 0)) {
+				is_it = "false";
+			}
+		}
+	}while(is_it == "false");													//repeats itself as long as is_it is set as false (input wasn't proper integer)
+	//Do While loop same as above, but for kernel y size
+	do {
+		std::string s_kernel_size;												//kernel size as string
+		system("CLS");															//clears console (tidyness)
+		std::cout << "Chooese gaussian filter kernel size y (height)." << std::endl << "Available sizes: 3, 5 ,7, 9" << std::endl;
+		std::cin >> s_kernel_size;												//input as string
+		is_it = "true";															//parameter set as true as by default input should be integer that meets the conditions. It is then verified
+
+		//For loop verifies if every char in string is a digit
+		for (int i = 0; i < s_kernel_size.length(); i++) {
+
+			//if For loop meets non digit character in string, then it sets is_it as false (string dosen't fit as integer) and stops
+			if (isdigit(s_kernel_size[i]) == false) {
+				is_it = "false";
+				break;
+			}
+		}
+		//if so far string is established as integer, then string is converted into integer and integer is checked for conditions (odd number from range)
+		if (is_it == "true") {
+			kernel_size_y = std::stoi(s_kernel_size);							//converts string to integer
+
+			//if integer dosen't meet conditions, then it sets is_it as false (integer dosen't meet condition)
+			if (kernel_size_y < 3 || kernel_size_y > 9 || (kernel_size_y % 2 == 0)) {
+				is_it = "false";
+			}
+		}
+	} while (is_it == "false");													//repeats itself as long as is_it is set as false (input wasn't proper integer)
+
+	//performs gaussian blur on img (using aquired kernel sizes parametres)and stores it as filtered_img 
+	cv::GaussianBlur(img, filtered_img, cv::Size(kernel_size_x, kernel_size_y),1);
+
+
+
+	//=======================================================================================================
+	//EDGE DETECTION=========================================================================================
+	//=======================================================================================================
+	//Do While loop keeps asking question until proper string is given (representing chosen edge detection method)
+	do {
+		system("CLS");																			//clears console (tidyness)
+		std::cout << "Write known edge detection type: 'sobel', 'laplace' or 'canny': ";		//asks question for preffered edge detection method
+		std::cin >> is_it;																		//is_it (that's why it's string, we use less variables) input
+	} while (is_it != "canny" && is_it != "laplace" && is_it != "sobel");						//loop repeats if no known command was given
+
+	system("CLS");																				//clears console (tidyness)
+	//if conditionals chose different code depending on is_it string content (chosen edge detection type)
+	//conditional that works if Sobel method is chosen
+	if (is_it == "sobel") {
+		std::cout << "You have chosen 'Sobel' edge detection. Press any key to continue";		//informs about chosen method
+		cv::Mat grad_x, grad_y, gray_img;														//creates empty images needed for Sobel method
+		cv::cvtColor(img, gray_img, cv::COLOR_RGB2GRAY);										//convert image from color to grayscale (needed for edge detection methods)
+		cv::Sobel(gray_img, grad_x, CV_64F, 1, 0, kernel_size_x);								//applies Sobel to grayscale img in x (1,0 parameters) direction (output is grad_x img, kernel is kernel_size_x X kernel_size_x)
+		cv::Sobel(gray_img, grad_y, CV_64F, 0, 1, kernel_size_y);								//applies Sobel to grayscale img in y (0,1 parameters) direction (output is grad_y img, kernel is kernel_size_y X kernel_size_y)
+		cv::convertScaleAbs(grad_x, grad_x);													//grad_x (input) must be converted to absolute 8 bit values (output is again put in grad_x)
+		cv::convertScaleAbs(grad_y, grad_y);													//grad_y (input) must be converted to absolute 8 bit values (output is again put in grad_y)
+		cv::addWeighted(grad_x, 0.5, grad_y, 0.5, 0, edge_dtct_img_1, -1);						//imgs grad_x and grad_y are added with same weight. Output is edge_dtct_img_1 (depths are same and stay as that ['-1'])
+		//cv::convertScaleAbs(edge_dtct_img, edge_dtct_img);									//8 bit conversion on edge_dtct_img_1 gives worse result than two 8 bit conversions on grad_x and grad_y
+	}
+	
+	//conditional that works if Laplacian method is chosen
+	if (is_it == "laplace") {
+		std::cout << "You have chosen 'Laplace' edge detection. Press any key to continue";		//informs about chosen method
+		cv::Mat gray_img;																		//creates empty images needed for Laplace method
+		cv::cvtColor(img, gray_img, cv::COLOR_RGB2GRAY);										//convert image from color to grayscale (needed for edge detection methods)
+		cv::Laplacian(gray_img, edge_dtct_img_1, CV_64F, kernel_size_x);						//applies Laplacian to grayscale img with kernel_size_x X kernel_size_x. output is edge_dtct_img with CV_64F depth
+		cv:convertScaleAbs(edge_dtct_img_1, edge_dtct_img_1);									//edge_dtct_img (input) must be converted to absolute 8 bit values (output is again put in edge_dtct_img_1)
+	}
+	
+	//conditional that works if Canny method is chosen
+	if (is_it == "canny") {
+		std::cout << "You have chosen 'Canny' edge detection. Press any key to continue";		//informs about chosen method
+		cv::Mat gray_img;																		//creates empty images needed for Canny method
+		cv::cvtColor(img, gray_img, cv::COLOR_RGB2GRAY);										//convert image from color to grayscale (needed for edge detection methods)
+		cv::Canny(gray_img, edge_dtct_img_1, 20, 100);											//applies  Canny to gray_img using treshhold values of (20,100) output is edge_dtct_img_1
+		cv::Canny(gray_img, edge_dtct_img_2, 50, 120);											//applies  Canny to gray_img using treshhold values of (20,100) output is edge_dtct_img_2
+		cv::Canny(gray_img, edge_dtct_img_3, 70, 150);											//applies  Canny to gray_img using treshhold values of (20,100) output is edge_dtct_img_3
+	}
+
+
+
+	//=======================================================================================================
+	//RESULTS DISPLAY========================================================================================
+	//=======================================================================================================
+	//creates windows with normalized sizes
+	cv::namedWindow("ORIGINAL IMAGE", cv::WINDOW_NORMAL);			//for original img
+	cv::namedWindow("GAUSS FILTER APPLIED", cv::WINDOW_NORMAL);		//for img after gauss filter was applied
+	//conditional that creates 3 windows when Canny method was used or 1 window if other methods (Sobel or Laplacian) was used
+	if (is_it == "canny") {
+		cv::namedWindow("CANNY EDGE DETECTION WITH  20 TO 100 TRESHOLD", cv::WINDOW_NORMAL);
+		cv::namedWindow("CANNY EDGE DETECTION WITH  50 TO 120 TRESHOLD", cv::WINDOW_NORMAL);
+		cv::namedWindow("CANNY EDGE DETECTION WITH  70 TO 150 TRESHOLD", cv::WINDOW_NORMAL);
+	}
+	else if(is_it == "laplace"){
+		cv::namedWindow("LAPLACIAN EDGE DETECTION APPLIED", cv::WINDOW_NORMAL);	
+	}
+	else if (is_it == "sobel") {
+		cv::namedWindow("SOBEL EDGE DETECTION APPLIED", cv::WINDOW_NORMAL);
+	}
+	
+	
+	//shows images in created windows
+	cv::imshow("ORIGINAL IMAGE",img);									//original image
+	cv::imshow("GAUSS FILTER APPLIED", filtered_img);					//image after gauss filter was applied
+	//conditional that shows 3 images with edge detection output when Canny method was used or 1 image if other method (Sobel or Laplacian) was used
+	if (is_it == "canny") {
+		cv::imshow("CANNY EDGE DETECTION WITH  20 TO 100 TRESHOLD", edge_dtct_img_1);
+		cv::imshow("CANNY EDGE DETECTION WITH  50 TO 120 TRESHOLD", edge_dtct_img_2);
+		cv::imshow("CANNY EDGE DETECTION WITH  70 TO 150 TRESHOLD", edge_dtct_img_3);
+	}
+	else if(is_it == "laplace"){
+		cv::imshow("LAPLACIAN EDGE DETECTION APPLIED", edge_dtct_img_1);
+	}
+	else if (is_it == "sobel") {
+		cv::imshow("SOBEL EDGE DETECTION APPLIED", edge_dtct_img_1);
+	}
+	
+	
+	cv::waitKey(0);														//waits for user response (klicking any key)
+	cv::destroyAllWindows();											//all windows disappear (because they are destroyed)
+	return 0;
+}
